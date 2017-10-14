@@ -1,6 +1,7 @@
 module Components.Todo exposing (..)
 
 import Dom
+import Task
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -12,12 +13,12 @@ type alias Model = {
   value: String
 }
 
-init: String -> Model
-init label = {
-    id = 0,
+create: Int -> String -> Model
+create id task = {
+    id = id,
     isDone = False,
     isEdit = False,
-    value = label
+    value = task
   }
 
 -- UPDATE
@@ -27,14 +28,15 @@ type Message = NoOperation
   | Edit String
   | Save String
 
-update: Message -> Model -> Model
+{- ! [] Executes a command on a background -}
+update: Message -> Model -> ( Model, Cmd Message)
 update message model =
   case Debug.log "MESSAGE: " message of
-    MarkAsDone -> { model | isDone = (not model.isDone) }
-    NoOperation -> model
-    Focus elementId -> { model | isEdit = True }
-    Edit newValue -> { model | value = newValue }
-    Save newValue -> { model | isEdit = False, value = newValue }
+    MarkAsDone -> { model | isDone = (not model.isDone) } ! [ Cmd.none ]
+    NoOperation -> model ! [ Cmd.none ]
+    Focus elementId -> { model | isEdit = True } ! [ Cmd.none ]
+    Edit newValue -> { model | value = newValue } ! [ Cmd.none ]
+    Save newValue -> { model | isEdit = False, value = newValue } ! [ Cmd.none ]
 
 
 

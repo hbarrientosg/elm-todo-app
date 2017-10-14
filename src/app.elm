@@ -1,35 +1,79 @@
 {-| Main App -}
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (..)
 import List exposing (..)
+import Components.Input as TodoEntry exposing (..)
 import Components.Todo as Todo exposing (..)
 
 main =
-  Html.beginnerProgram {
-    model = model,
-    view = view,
-    update = Todo.update
-  }
+    Html.program
+        { view = view,
+          update = update,
+          subscriptions = \_ -> Sub.none, -- No Subscritpions
+          init = ( model, Cmd.none )
+        }
 
 -- MODEL
-model : Todo.Model
-model = Todo.init "Hola que hace"
+type alias TodoApp = {
+  items: List Todo.Model,
+  len: Int,
+  entry: TodoEntry
+}
+model : TodoApp
+model = {
+    items = [],
+    len = 0,
+    entry = TodoEntry.emptyEntry
+  }
 
 -- UPDATE
+type Message = NoOperation
+  | NewTodo (TodoEntry.Message)
+  | UpdateTodo (Int, Todo.Message)
+
+{- ! [] Executes a command on a background -}
+update: Message -> TodoApp -> ( TodoApp, Cmd Message)
+update message model =
+  case Debug.log "MESSAGE: " message of
+    NoOperation -> (model, Cmd.none)
+    NewTodo entryMsg ->
+      let
+        updateEntry entry =
+          TodoEntry.update entryMsg model.entry
+        newModel = { model | entry = updateEntry model.entry }
+      in
+        case entryMsg of
+          TodoEntry.CreateNew ->
+            let
+              newId = (List.length model.items) + 1
+              newValue = model.entry.value
+              newModel = { model |
+                entry = TodoEntry.emptyEntry,
+                items = (Todo.create newId newValue) :: model.items,
+                len = newId
+              }
+            in
+            (newModel, Cmd.none)
+          _ -> (newModel, Cmd.none)
+    UpdateTodo todoMsg ->
+      (model, Cmd.none)
 
 -- VIEW
-view: Todo.Model -> Html Todo.Message
+view: TodoApp -> Html Message
 view model =
   section [ class "todoapp" ] [
     header [ class "header" ] [
       h1 [] [ text "todos" ],
-      input [ type_ "text", class "new-todo", placeholder "What needs to be done?", autofocus True ] []
+      Html.map (\msg -> NewTodo msg) (TodoEntry.view model.entry)
     ],
     section [ class "main" ] [
-      ul [ class "todo-list" ] [
-        Todo.view model
-      ]
+      ul [ class "todo-list" ]
+      (List.map (\todo ->
+                  let
+                    todoView = Todo.view todo
+                  in
+                    Html.map (\msg -> UpdateTodo (todo.id, msg)) todoView
+                ) model.items)
     ]
   ]
 

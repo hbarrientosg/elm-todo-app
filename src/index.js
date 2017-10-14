@@ -1,4 +1,5 @@
 require("./app.css");
+require("./components/input");
 require("./components/todo");
 
 const App = require("./App");
