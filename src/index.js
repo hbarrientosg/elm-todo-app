@@ -1,4 +1,6 @@
 require("./app.css");
+require("./components/todo");
 
-var Elm = require("./App");
-Elm.Main.embed(document.getElementById("app"));
+const App = require("./App");
+
+App.Main.embed(document.getElementById("app"));
