@@ -77,15 +77,10 @@ update message model =
           todoId = Tuple.first todoMsg
           todoMessage = Tuple.second todoMsg
           {- Find a todo and only update the selected ones -}
-          updateTodo = \todo ->
-            if todo.id == todoId then
-              Just (Todo.update todoMessage todo)
-            else
-              Just todo
-          newModel = { model | items = List.filterMap updateTodo model.items }
-        in
-          case todoMessage of
-            _ -> (newModel, Cmd.none)
+          updateTodo = updateMap todoId todoMessage
+          updateModel = { model | items = List.filterMap updateTodo model.items }
+        in case todoMessage of
+          _ -> (updateModel, Cmd.none)
     LocationChange location ->
         let
           newRoute = Routing.parseLocation location
@@ -101,6 +96,15 @@ routeFilter route =
       Active -> todo.isDone == False
       Completed -> todo.isDone == True
       _ -> (todo.id /= -1)
+
+
+updateMap : Int -> Todo.Message -> (Todo.Model -> Maybe Todo.Model)
+updateMap todoId todoMessage =
+  \todo ->
+    if todo.id == todoId then
+      (Todo.update todoMessage todo)
+    else
+      Just todo
 
 -- VIEW
 view: TodoApp -> Html Message

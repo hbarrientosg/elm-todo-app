@@ -26,17 +26,19 @@ type Message = NoOperation
   | MarkAsDone
   | Focus String
   | Edit String
+  | Delete
   | Save String
 
 {- ! [] Executes a command on a background -}
-update: Message -> Model -> Model
+update: Message -> Model -> Maybe Model
 update message model =
   case Debug.log "MESSAGE: " message of
-    MarkAsDone -> { model | isDone = (not model.isDone) }
-    NoOperation -> model
-    Focus elementId -> { model | isEdit = True }
-    Edit newValue -> { model | value = newValue }
-    Save newValue -> { model | isEdit = False, value = newValue }
+    MarkAsDone -> Just { model | isDone = (not model.isDone) }
+    NoOperation -> Just model
+    Focus elementId -> Just { model | isEdit = True }
+    Edit newValue -> Just { model | value = newValue }
+    Delete -> Nothing
+    Save newValue -> Just { model | isEdit = False, value = newValue }
 
 
 
@@ -57,7 +59,7 @@ view model =
       div [ class "view" ] [
         input [ type_ "checkbox", class "toggle", onClick MarkAsDone, checked model.isDone ] [],
         label [] [ text model.value ],
-        button [ class "destroy" ] []
+        button [ class "destroy", onClick Delete] []
       ],
       input [
         type_ "text",
