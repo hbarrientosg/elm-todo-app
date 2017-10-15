@@ -2,32 +2,49 @@
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import List exposing (..)
+import Navigation exposing (Location)
 import Components.Input as TodoEntry exposing (..)
 import Components.Todo as Todo exposing (..)
+import Components.Routing as Routing exposing (..)
+
+init: Location -> (TodoApp, Cmd Message)
+init location =
+  let
+    route = Routing.parseLocation location
+  in
+    (initModel route, Cmd.none)
+
 
 main =
-    Html.program
+    Navigation.program LocationChange
         { view = view,
           update = update,
           subscriptions = \_ -> Sub.none, -- No Subscritpions
-          init = ( model, Cmd.none )
+          init = init
         }
 
 -- MODEL
 type alias TodoApp = {
   items: List Todo.Model,
   guidNext: Int,
-  entry: TodoEntry
+  entry: TodoEntry,
+  route: Routing.Route
 }
-model : TodoApp
-model = {
+emptyModel : TodoApp
+emptyModel = {
     items = [],
     guidNext = 0,
-    entry = TodoEntry.emptyEntry
+    entry = TodoEntry.emptyEntry,
+    route = All
   }
+
+initModel : Routing.Route -> TodoApp
+initModel newRoute =
+  { emptyModel | route = newRoute }
 
 -- UPDATE
 type Message = NoOperation
+  | LocationChange (Location)
   | NewTodo (TodoEntry.Message)
   | UpdateTodo (Int, Todo.Message)
 
@@ -69,6 +86,12 @@ update message model =
         in
           case todoMessage of
             _ -> (newModel, Cmd.none)
+    LocationChange location ->
+        let
+          newRoute = Routing.parseLocation location
+          newModel = { model | route = newRoute }
+        in case Debug.log "Route" newRoute of
+          _ -> (newModel, Cmd.none)
 
 
 -- VIEW
@@ -80,6 +103,11 @@ view model =
         [("display", "none")]
       else
         []
+    isSelected = \route ->
+      if model.route == route then
+        "selected"
+      else
+        ""
   in
     section [ class "todoapp" ] [
       header [ class "header" ] [
@@ -99,58 +127,17 @@ view model =
         span [ class "todo-count" ] [
           strong [] [ text (toString (List.length model.items))],
           text " items left"
+        ],
+        ul [ class "filters" ] [
+          li [] [
+            a [ class (isSelected All), href "/#/" ] [ text "All" ]
+          ],
+          li [] [
+            a [ class (isSelected Active), href "#/active"] [ text "Active" ]
+          ],
+          li [] [
+            a [ class (isSelected Completed), href "#/completed"] [ text "Completed" ]
+          ]
         ]
       ]
     ]
-
-{-
-  main =
-    Html.beginnerProgram { model = model, view = newTodo, update = addNew }
-  type alias Todo = {
-    isDone: Bool,
-    label: String
-  }
-
-  type alias TodoApp = {
-    items: List Todo,
-    newItem: String
-  }
-
-  model : TodoApp
-  model = {
-      items = [],
-      newItem = ""
-    }
-
-   MODEL
-
-  UPDATE
-  type UpdateApp =
-    UpdateField String |
-    Add
-
-  addNew: UpdateApp -> TodoApp
-  addNew msg model =
-    case Debug.log "MESSAGE: " msg of
-      UpdateField str -> model
-
-   VIEW
-  newTodo : TodoApp -> Html UpdateApp
-  newTodo appModel =
-    input [
-      type_ "text",
-      class "new-todo",
-      placeholder "What needs to be done?",
-      value appModel.field,
-      autofocus True,
-      onInput UpdateField ] []
-
-  main =
-   section [ class "todoapp" ]
-     [ header [ class "header" ] [
-       h1 [] [ text "todos" ],
-       input [ type_ "text", class "new-todo", placeholder "What needs to be done?", autofocus True, onInput Change ] []
-     ]
-   ]
-
--}
