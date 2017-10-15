@@ -74,21 +74,34 @@ update message model =
 -- VIEW
 view: TodoApp -> Html Message
 view model =
-  section [ class "todoapp" ] [
-    header [ class "header" ] [
-      h1 [] [ text "todos" ],
-      Html.map (\msg -> NewTodo msg) (TodoEntry.view model.entry)
-    ],
-    section [ class "main" ] [
-      ul [ class "todo-list" ]
-      (List.map (\todo ->
-                  let
-                    todoView = Todo.view todo
-                  in
-                    Html.map (\msg -> UpdateTodo (todo.id, msg)) todoView
-                ) model.items)
+  let
+    isVisible = \items ->
+      if List.isEmpty items then
+        [("display", "none")]
+      else
+        []
+  in
+    section [ class "todoapp" ] [
+      header [ class "header" ] [
+        h1 [] [ text "todos" ],
+        Html.map (\msg -> NewTodo msg) (TodoEntry.view model.entry)
+      ],
+      section [ class "main" ] [
+        ul [ class "todo-list" ]
+        (List.map (\todo ->
+                    let
+                      todoView = Todo.view todo
+                    in
+                      Html.map (\msg -> UpdateTodo (todo.id, msg)) todoView
+                  ) model.items)
+      ],
+      footer [ class "footer", style (isVisible model.items) ] [
+        span [ class "todo-count" ] [
+          strong [] [ text (toString (List.length model.items))],
+          text " items left"
+        ]
+      ]
     ]
-  ]
 
 {-
   main =
