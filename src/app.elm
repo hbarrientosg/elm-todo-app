@@ -94,6 +94,14 @@ update message model =
           _ -> (newModel, Cmd.none)
 
 
+routeFilter : Routing.Route -> (Todo.Model -> Bool)
+routeFilter route =
+  \todo ->
+    case route of
+      Active -> todo.isDone == False
+      Completed -> todo.isDone == True
+      _ -> (todo.id /= -1)
+
 -- VIEW
 view: TodoApp -> Html Message
 view model =
@@ -108,6 +116,8 @@ view model =
         "selected"
       else
         ""
+    activeCount = List.length (List.filter (routeFilter Active) model.items)
+    filteredItems = List.filter (routeFilter model.route) model.items
   in
     section [ class "todoapp" ] [
       header [ class "header" ] [
@@ -121,11 +131,11 @@ view model =
                       todoView = Todo.view todo
                     in
                       Html.map (\msg -> UpdateTodo (todo.id, msg)) todoView
-                  ) model.items)
+                  ) filteredItems)
       ],
       footer [ class "footer", style (isVisible model.items) ] [
         span [ class "todo-count" ] [
-          strong [] [ text (toString (List.length model.items))],
+          strong [] [ text (toString activeCount)],
           text " items left"
         ],
         ul [ class "filters" ] [

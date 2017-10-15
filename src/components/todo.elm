@@ -55,7 +55,7 @@ view model =
   in
     li [ class editingClass, onDoubleClick (Focus elementId) ] [
       div [ class "view" ] [
-        input [ type_ "checkbox", class "toggle", onClick MarkAsDone ] [],
+        input [ type_ "checkbox", class "toggle", onClick MarkAsDone, checked model.isDone ] [],
         label [] [ text model.value ],
         button [ class "destroy" ] []
       ],
