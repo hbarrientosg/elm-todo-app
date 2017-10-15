@@ -4,8 +4,9 @@
   "description": "Todo List written in EML",
   "main": "index.js",
   "scripts": {
-    "prebuild": "rimraf dist",
-    "reinstall": "npm i rimraf && rimraf node_modules && npm uninstall -g elm && npm i -g elm && npm i && elm package install",
+    "prebuild": "rimraf build",
+    "install:elm": "npm run elm-package -- install",
+    "elm-package": "node_modules/.bin/elm-package",
     "start": "npm run webpack-dev-server",
     "webpack-dev-server": "./node_modules/.bin/webpack-dev-server"
   },
