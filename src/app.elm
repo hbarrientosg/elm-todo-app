@@ -16,13 +16,13 @@ main =
 -- MODEL
 type alias TodoApp = {
   items: List Todo.Model,
-  len: Int,
+  guidNext: Int,
   entry: TodoEntry
 }
 model : TodoApp
 model = {
     items = [],
-    len = 0,
+    guidNext = 0,
     entry = TodoEntry.emptyEntry
   }
 
@@ -41,22 +41,35 @@ update message model =
         updateEntry entry =
           TodoEntry.update entryMsg model.entry
         newModel = { model | entry = updateEntry model.entry }
+        newId = model.guidNext + 1
       in
         case entryMsg of
           TodoEntry.CreateNew ->
             let
-              newId = (List.length model.items) + 1
               newValue = model.entry.value
               newModel = { model |
                 entry = TodoEntry.emptyEntry,
                 items = (Todo.create newId newValue) :: model.items,
-                len = newId
+                guidNext = newId
               }
             in
             (newModel, Cmd.none)
           _ -> (newModel, Cmd.none)
     UpdateTodo todoMsg ->
-      (model, Cmd.none)
+        let
+          todoId = Tuple.first todoMsg
+          todoMessage = Tuple.second todoMsg
+          {- Find a todo and only update the selected ones -}
+          updateTodo = \todo ->
+            if todo.id == todoId then
+              Just (Todo.update todoMessage todo)
+            else
+              Just todo
+          newModel = { model | items = List.filterMap updateTodo model.items }
+        in
+          case todoMessage of
+            _ -> (newModel, Cmd.none)
+
 
 -- VIEW
 view: TodoApp -> Html Message

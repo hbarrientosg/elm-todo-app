@@ -29,14 +29,14 @@ type Message = NoOperation
   | Save String
 
 {- ! [] Executes a command on a background -}
-update: Message -> Model -> ( Model, Cmd Message)
+update: Message -> Model -> Model
 update message model =
   case Debug.log "MESSAGE: " message of
-    MarkAsDone -> { model | isDone = (not model.isDone) } ! [ Cmd.none ]
-    NoOperation -> model ! [ Cmd.none ]
-    Focus elementId -> { model | isEdit = True } ! [ Cmd.none ]
-    Edit newValue -> { model | value = newValue } ! [ Cmd.none ]
-    Save newValue -> { model | isEdit = False, value = newValue } ! [ Cmd.none ]
+    MarkAsDone -> { model | isDone = (not model.isDone) }
+    NoOperation -> model
+    Focus elementId -> { model | isEdit = True }
+    Edit newValue -> { model | value = newValue }
+    Save newValue -> { model | isEdit = False, value = newValue }
 
 
 
