@@ -30,6 +30,7 @@ type alias TodoApp = {
   entry: TodoEntry,
   route: Routing.Route
 }
+
 emptyModel : TodoApp
 emptyModel = {
     items = [],
@@ -63,12 +64,7 @@ update message model =
         case entryMsg of
           TodoEntry.CreateNew ->
             let
-              newValue = model.entry.value
-              newModel = { model |
-                entry = TodoEntry.emptyEntry,
-                items = (Todo.create newId newValue) :: model.items,
-                guidNext = newId
-              }
+              newModel = addNew model newId
             in
             (newModel, Cmd.none)
           _ -> (newModel, Cmd.none)
@@ -97,6 +93,16 @@ routeFilter route =
       Completed -> todo.isDone == True
       _ -> (todo.id /= -1)
 
+addNew: TodoApp -> Int -> TodoApp
+addNew model newId =
+  if String.isEmpty model.entry.value then
+    model
+  else
+    { model |
+      entry = TodoEntry.emptyEntry,
+      items = (Todo.create newId model.entry.value) :: model.items,
+      guidNext = newId
+    }
 
 updateMap : Int -> Todo.Message -> (Todo.Model -> Maybe Todo.Model)
 updateMap todoId todoMessage =

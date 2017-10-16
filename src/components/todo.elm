@@ -1,7 +1,5 @@
 module Components.Todo exposing (..)
 
-import Dom
-import Task
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -39,9 +37,6 @@ update message model =
     Edit newValue -> Just { model | value = newValue }
     Delete -> Nothing
     Save newValue -> Just { model | isEdit = False, value = newValue }
-
-
-
 
 -- VIEW
 view: Model -> Html Message
