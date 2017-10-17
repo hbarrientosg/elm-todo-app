@@ -1,4 +1,4 @@
-module Components.Input exposing (..)
+module Components.TodoEntry exposing (..)
 
 import Html exposing (Html, input)
 import Html.Attributes exposing (..)

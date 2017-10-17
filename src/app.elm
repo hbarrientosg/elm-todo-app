@@ -2,8 +2,10 @@
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import List exposing (..)
+import Task
+import Dom exposing (focus)
 import Navigation exposing (Location)
-import Components.Input as TodoEntry exposing (..)
+import Components.TodoEntry as TodoEntry exposing (..)
 import Components.Todo as Todo exposing (..)
 import Components.Routing as Routing exposing (..)
 
@@ -48,12 +50,12 @@ type Message = NoOperation
   | LocationChange (Location)
   | NewTodo (TodoEntry.Message)
   | UpdateTodo (Int, Todo.Message)
+  | FocusAttempt (Result Dom.Error ())
 
 {- ! [] Executes a command on a background -}
 update: Message -> TodoApp -> ( TodoApp, Cmd Message)
 update message model =
   case Debug.log "MESSAGE: " message of
-    NoOperation -> (model, Cmd.none)
     NewTodo entryMsg ->
       let
         updateEntry entry =
@@ -66,8 +68,9 @@ update message model =
             let
               newModel = addNew model newId
             in
-            (newModel, Cmd.none)
-          _ -> (newModel, Cmd.none)
+            newModel ! []
+          _ -> newModel ! []
+
     UpdateTodo todoMsg ->
         let
           todoId = Tuple.first todoMsg
@@ -76,15 +79,19 @@ update message model =
           updateTodo = updateMap todoId todoMessage
           updateModel = { model | items = List.filterMap updateTodo model.items }
         in case todoMessage of
-          _ -> (updateModel, Cmd.none)
+          Focus todoId ->
+            (updateModel, Task.attempt FocusAttempt (focus todoId) )
+          _ -> updateModel ! []
     LocationChange location ->
         let
           newRoute = Routing.parseLocation location
           newModel = { model | route = newRoute }
         in case Debug.log "Route" newRoute of
-          _ -> (newModel, Cmd.none)
+          _ -> newModel ! []
 
-
+    FocusAttempt result ->
+      model ! []
+    _ -> model ! []
 routeFilter : Routing.Route -> (Todo.Model -> Bool)
 routeFilter route =
   \todo ->
@@ -111,6 +118,7 @@ updateMap todoId todoMessage =
       (Todo.update todoMessage todo)
     else
       Just todo
+
 
 -- VIEW
 view: TodoApp -> Html Message
