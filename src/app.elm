@@ -5,9 +5,9 @@ import List exposing (..)
 import Task
 import Dom exposing (focus)
 import Navigation exposing (Location)
+import Routing exposing (..)
 import Components.TodoEntry as TodoEntry exposing (..)
 import Components.Todo as Todo exposing (..)
-import Components.Routing as Routing exposing (..)
 
 init: Location -> (TodoApp, Cmd Message)
 init location =
@@ -17,6 +17,7 @@ init location =
     (initModel route, Cmd.none)
 
 
+main : Program Never TodoApp Message
 main =
     Navigation.program LocationChange
         { view = view,

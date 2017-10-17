@@ -1,5 +1,5 @@
 require("./app.css");
-require("./components/routing");
+require("./routing");
 require("./components/todoEntry");
 require("./components/todo");
 

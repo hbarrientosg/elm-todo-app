@@ -1,4 +1,4 @@
-module Components.Routing exposing (..)
+module Routing exposing (..)
 
 import Navigation exposing (Location)
 import UrlParser exposing (..)
