@@ -3,11 +3,13 @@ module Components.Todo exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Components.Attributes exposing (..)
 
 type alias Model = {
   id: Int,
   isDone: Bool,
   isEdit: Bool,
+  editing: String,
   value: String
 }
 
@@ -16,6 +18,7 @@ create id task = {
     id = id,
     isDone = False,
     isEdit = False,
+    editing = task,
     value = task
   }
 
@@ -25,7 +28,8 @@ type Message = NoOperation
   | Focus String
   | Edit String
   | Delete
-  | Save String
+  | Save
+  | Cancel
 
 {- ! [] Executes a command on a background -}
 update: Message -> Model -> Maybe Model
@@ -34,9 +38,10 @@ update message model =
     MarkAsDone -> Just { model | isDone = (not model.isDone) }
     NoOperation -> Just model
     Focus elementId -> Just { model | isEdit = True }
-    Edit newValue -> Just { model | value = newValue }
+    Edit newValue -> Just { model | isEdit = True, editing = newValue }
     Delete -> Nothing
-    Save newValue -> Just { model | isEdit = False, value = newValue }
+    Save -> Just { model | isEdit = False, value = model.editing }
+    Cancel -> Just { model | isEdit = False, editing = model.value }
 
 -- VIEW
 view: Model -> Html Message
@@ -60,8 +65,9 @@ view model =
         type_ "text",
         id elementId,
         class "edit",
-        value newValue,
+        value model.editing,
         onInput Edit,
-        onBlur (Save newValue)
+        onBlur Save,
+        onFinish Save Cancel
       ] []
     ]
