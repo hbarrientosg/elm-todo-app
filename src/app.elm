@@ -1,6 +1,7 @@
 {-| Main App -}
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (..)
 import List exposing (..)
 import Task
 import Dom exposing (focus)
@@ -29,6 +30,7 @@ main =
 -- MODEL
 type alias TodoApp = {
   items: List Todo.Model,
+  markAll: Bool,
   guidNext: Int,
   entry: TodoEntry,
   route: Routing.Route
@@ -37,6 +39,7 @@ type alias TodoApp = {
 emptyModel : TodoApp
 emptyModel = {
     items = [],
+    markAll = False,
     guidNext = 0,
     entry = TodoEntry.emptyEntry,
     route = All
@@ -52,6 +55,8 @@ type Message = NoOperation
   | NewTodo (TodoEntry.Message)
   | UpdateTodo (Int, Todo.Message)
   | FocusAttempt (Result Dom.Error ())
+  | MarkAll (Bool)
+  | Clear
 
 {- ! [] Executes a command on a background -}
 update: Message -> TodoApp -> ( TodoApp, Cmd Message)
@@ -71,7 +76,6 @@ update message model =
             in
             newModel ! []
           _ -> newModel ! []
-
     UpdateTodo todoMsg ->
         let
           todoId = Tuple.first todoMsg
@@ -89,10 +93,21 @@ update message model =
           newModel = { model | route = newRoute }
         in case Debug.log "Route" newRoute of
           _ -> newModel ! []
-
     FocusAttempt result ->
       model ! []
+    MarkAll value ->
+        let
+          update = updateAll (Todo.MarkAsDone value)
+          newModel = { model |
+              items = List.filterMap update model.items,
+              markAll = value
+            }
+        in
+          newModel ! []
+    Clear ->
+      model ! []
     _ -> model ! []
+
 routeFilter : Routing.Route -> (Todo.Model -> Bool)
 routeFilter route =
   \todo ->
@@ -111,6 +126,11 @@ addNew model newId =
       items = (Todo.create newId model.entry.value) :: model.items,
       guidNext = newId
     }
+
+updateAll : Todo.Message -> (Todo.Model -> Maybe Todo.Model)
+updateAll todoMessage =
+  \todo ->
+    (Todo.update todoMessage todo)
 
 updateMap : Int -> Todo.Message -> (Todo.Model -> Maybe Todo.Model)
 updateMap todoId todoMessage =
@@ -136,6 +156,7 @@ view model =
       else
         ""
     activeCount = List.length (List.filter (routeFilter Active) model.items)
+    activeDone = List.length (List.filter (routeFilter Completed) model.items)
     filteredItems = List.filter (routeFilter model.route) model.items
   in
     section [ class "todoapp" ] [
@@ -144,6 +165,12 @@ view model =
         Html.map (\msg -> NewTodo msg) (TodoEntry.view model.entry)
       ],
       section [ class "main" ] [
+        input [
+          class "toggle-all",
+          type_ "checkbox",
+          name "toggle",
+          onClick (MarkAll (not model.markAll)) ] [],
+        label [ for "toggle-all" ] [ text "Mark all as complete" ],
         ul [ class "todo-list" ]
         (List.map (\todo ->
                     let
@@ -159,7 +186,7 @@ view model =
         ],
         ul [ class "filters" ] [
           li [] [
-            a [ class (isSelected All), href "/#/" ] [ text "All" ]
+            a [ class (isSelected All), href "#/" ] [ text "All" ]
           ],
           li [] [
             a [ class (isSelected Active), href "#/active"] [ text "Active" ]
@@ -167,6 +194,8 @@ view model =
           li [] [
             a [ class (isSelected Completed), href "#/completed"] [ text "Completed" ]
           ]
-        ]
+        ],
+        button [ class "clear-completed", hidden (activeDone == 0), onClick Clear]
+               [ text  (String.concat ["Clear completed (", (toString activeDone), ")"])  ]
       ]
     ]
