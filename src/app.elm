@@ -105,7 +105,12 @@ update message model =
         in
           newModel ! []
     Clear ->
-      model ! []
+      let
+        deleteComplete = routeFilter Routing.Active
+      in
+      { model |
+          items = List.filter deleteComplete model.items
+      } ! []
     _ -> model ! []
 
 routeFilter : Routing.Route -> (Todo.Model -> Bool)
