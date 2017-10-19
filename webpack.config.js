@@ -33,6 +33,10 @@ const config = {
           fallback: "style-loader",
           use: "css-loader"
         })
+      },
+      {
+        test: /\.jpe?g$|\.ico$|\.gif$|\.png$|\.svg$|\.woff$|\.ttf$/,
+        loader: 'file-loader?name=[name].[ext]'
       }
     ]
   },
