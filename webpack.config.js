@@ -3,12 +3,12 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const webpack = require("webpack");
 const path = require("path");
 
-
+const isDev = process.env.NODE_ENV !== "production";
 
 const config = {
-  devtool: 'eval-source-map',
-  entry: "./src/app/index.js",
+  entry: ["./src/app/index.js"],
   output: {
+    path: path.join(__dirname, '/src/build/'),
     filename: "app.js"
   },
   resolve: {
@@ -40,7 +40,7 @@ const config = {
       },
       {
         test: /\.jpe?g$|\.ico$|\.gif$|\.png$|\.svg$|\.woff$|\.ttf$/,
-        loader: 'file-loader?name=[name].[ext]'
+        loader: "file-loader?name=[name].[ext]"
       }
     ]
   },
@@ -52,9 +52,27 @@ const config = {
       filename: "index.html"
     }),
     new webpack.DefinePlugin({
-      'process.env.NODE_ENV': JSON.stringify('development')
+      "process.env.NODE_ENV": JSON.stringify(
+        process.env.NODE_ENV || "development"
+      )
     })
   ]
 };
+
+if (isDev) {
+  config.devtool = "eval-source-map";
+  config.entry.push("webpack-hot-middleware/client?reload=true");
+  config.plugins.push(new webpack.HotModuleReplacementPlugin());
+} else {
+  config.devtool = "source-map";
+  config.plugins.push(
+    new webpack.optimize.UglifyJsPlugin({
+      compressor: {
+        warnings: false,
+        screw_ie8: true
+      }
+    })
+  );
+}
 
 module.exports = config;

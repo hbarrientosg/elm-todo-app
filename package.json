@@ -8,11 +8,17 @@
     "install:elm": "npm run elm-package -- install",
     "elm-package": "node_modules/.bin/elm-package",
     "start": "node src/server",
+    "build": "cross-env NODE_ENV=production webpack --config ./webpack.config.js --progress --profile --colors",
     "webpack-dev-server": "./node_modules/.bin/webpack-dev-server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/isejaa/elm-todo-app.git"
   },
   "author": "Humberto Barrientos González",
   "license": "MIT",
   "devDependencies": {
+    "cross-env": "^5.1.0",
     "css-loader": "^0.28.7",
     "elm": "^0.18.0",
     "elm-oracle": "^1.1.1",
