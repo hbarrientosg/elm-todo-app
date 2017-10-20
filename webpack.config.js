@@ -1,9 +1,13 @@
 const ExtractTextPlugin = require("extract-text-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const webpack = require("webpack");
 const path = require("path");
 
+
+
 const config = {
-  entry: "./src/index.js",
+  devtool: 'eval-source-map',
+  entry: "./src/app/index.js",
   output: {
     filename: "app.js"
   },
@@ -43,17 +47,14 @@ const config = {
   plugins: [
     new ExtractTextPlugin("app.css"),
     new HtmlWebpackPlugin({
-      template: "src/index.html",
+      template: "src/app/index.html",
       inject: "body",
       filename: "index.html"
+    }),
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': JSON.stringify('development')
     })
-  ],
-  devServer: {
-    contentBase: path.join(__dirname, "build"),
-    historyApiFallback: true,
-    compress: true,
-    port: 8555
-  }
+  ]
 };
 
 module.exports = config;
