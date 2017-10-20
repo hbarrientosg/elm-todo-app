@@ -1,10 +1,5 @@
-require("./app.css");
-require("./favicon.ico");
+const express = require('express');
 
-require("./routing");
-require("./components/todoEntry");
-require("./components/todo");
+const app = express();
 
-
-const App = require("./App");
-App.Main.embed(document.getElementById("app"));
+app.listen(8444, () => 'listening on port 8444');
