@@ -1,7 +1,7 @@
 {
-  "name": "eml-todo-app",
+  "name": "elm-todo-app",
   "version": "0.0.0",
-  "description": "Todo List written in EML",
+  "description": "Todo List written in ELM",
   "main": "index.js",
   "scripts": {
     "prebuild": "rimraf build",
