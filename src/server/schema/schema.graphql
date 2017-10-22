@@ -1,0 +1,13 @@
+type Todo {
+  id: Int!
+  isDone: Boolean
+  value: String
+}
+
+type Query {
+  todos: [Todo]
+}
+
+schema {
+  query: Query
+}

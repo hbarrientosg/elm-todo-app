@@ -1,12 +1,23 @@
-const express = require("express");
+import path from "path";
+import express from "express";
+import graphqlHTTP from "express-graphql";
+import schema from "./schema";
+import db from "./db";
+
 const webpackMiddleware = require("webpack-dev-middleware");
 const webpackHotMiddleware = require("webpack-hot-middleware");
 const webpack = require("webpack");
-const config = require("../webpack.config");
+const config = require("../../webpack.config");
 
 const isDev = process.env.NODE_ENV !== "production";
 const port = isDev ? 8555 : process.env.PORT;
 const app = express();
+
+app.use("/api/graphql", graphqlHTTP({
+  schema: schema,
+  rootValue: db,
+  graphiql: true
+}));
 
 if (isDev) {
   const compiler = webpack(config);
@@ -24,7 +35,7 @@ if (isDev) {
   });
   app.use(middleware);
   app.use(webpackHotMiddleware(compiler));
-  app.get("*", function response(req, res) {
+  app.get("/", function response(req, res) {
     console.log(req, res);
     res.write(
       middleware.fileSystem.readFileSync(
